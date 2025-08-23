@@ -1,0 +1,216 @@
+services:
+  # Rancher Server
+  rancher-server:
+    image: rancher/rancher:latest
+    container_name: rancher-server
+    hostname: rancher-server
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /media/marcelo/dados/rancher-data:/var/lib/rancher
+      - /media/marcelo/dados/rancher-audit:/var/log/auditlog
+    environment:
+      - CATTLE_BOOTSTRAP_PASSWORD=admin123456
+    networks:
+      - k8s-network
+    privileged: true
+
+  # K8s Control Plane (Master Node)
+  k8s-master:
+    image: rancher/k3s:latest
+    container_name: k8s-master
+    hostname: k8s-master
+    restart: unless-stopped
+    command: server
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    ports:
+      - "6443:6443"
+    environment:
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+      - K3S_KUBECONFIG_MODE=666
+      - K3S_NODE_NAME=k8s-master
+    volumes:
+      - /media/marcelo/dados/k8s-master:/var/lib/rancher/k3s
+      - /media/marcelo/dados/k8s-config:/output
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    depends_on:
+      - rancher-server
+
+  # Worker Node 1
+  k8s-worker-1:
+    image: rancher/k3s:latest
+    container_name: k8s-worker-1
+    hostname: k8s-worker-1
+    restart: unless-stopped
+    command: agent
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    environment:
+      - K3S_URL=https://k8s-master:6443
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_NODE_NAME=k8s-worker-1
+    volumes:
+      - /media/marcelo/dados/k8s-worker-1:/var/lib/rancher/k3s
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    shm_size: 50g
+    depends_on:
+      - k8s-master
+
+  # Worker Node 2
+  k8s-worker-2:
+    image: rancher/k3s:latest
+    container_name: k8s-worker-2
+    hostname: k8s-worker-2
+    restart: unless-stopped
+    command: agent
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    environment:
+      - K3S_URL=https://k8s-master:6443
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_NODE_NAME=k8s-worker-2
+    volumes:
+      - /media/marcelo/dados/k8s-worker-2:/var/lib/rancher/k3s
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    shm_size: 50g
+    depends_on:
+      - k8s-master
+
+  # Worker Node 3
+  k8s-worker-3:
+    image: rancher/k3s:latest
+    container_name: k8s-worker-3
+    hostname: k8s-worker-3
+    restart: unless-stopped
+    command: agent
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    environment:
+      - K3S_URL=https://k8s-master:6443
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_NODE_NAME=k8s-worker-3
+    volumes:
+      - /media/marcelo/dados/k8s-worker-3:/var/lib/rancher/k3s
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    shm_size: 50g
+    depends_on:
+      - k8s-master
+
+  # Worker Node 4
+  k8s-worker-4:
+    image: rancher/k3s:latest
+    container_name: k8s-worker-4
+    hostname: k8s-worker-4
+    restart: unless-stopped
+    command: agent
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    environment:
+      - K3S_URL=https://k8s-master:6443
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_NODE_NAME=k8s-worker-4
+    volumes:
+      - /media/marcelo/dados/k8s-worker-4:/var/lib/rancher/k3s
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    shm_size: 50g
+    depends_on:
+      - k8s-master
+
+networks:
+  k8s-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  rancher-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/rancher-data
+  k8s-master-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/k8s-master
+  k8s-worker-1-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/k8s-worker-1
+  k8s-worker-2-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/k8s-worker-2
+  k8s-worker-3-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/k8s-worker-3
+  k8s-worker-4-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/marcelo/dados/k8s-worker-4
