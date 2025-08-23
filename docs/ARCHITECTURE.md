@@ -10,19 +10,19 @@ O ambiente simula um cluster Kubernetes de produção usando K3s (distribuição
 graph TB
     subgraph "Docker Host"
         subgraph "Rancher Management"
-            R[Rancher Server<br/>Port 443/80]
+            R["Rancher Server<br/>Port 443/80"]
         end
         
         subgraph "Kubernetes Cluster"
-            M[K8s Master<br/>Control Plane<br/>Port 6443]
-            W1[Worker 1<br/>2GB RAM]
-            W2[Worker 2<br/>2GB RAM]
-            W3[Worker 3<br/>2GB RAM]
-            W4[Worker 4<br/>2GB RAM]
+            M["K8s Master<br/>Control Plane<br/>Port 6443"]
+            W1["Worker 1<br/>2GB RAM"]
+            W2["Worker 2<br/>2GB RAM"]
+            W3["Worker 3<br/>2GB RAM"]
+            W4["Worker 4<br/>2GB RAM"]
         end
         
         subgraph "Persistent Storage"
-            V1[/media/marcelo/dados/<br/>Volumes]
+            V1["Storage Volumes<br/>/media/marcelo/dados/"]
         end
     end
     
