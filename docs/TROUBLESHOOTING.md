@@ -18,7 +18,7 @@ docker compose logs k8s-master
 
 # Verificar recursos do sistema
 free -h
-df -h /media/marcelo/dados
+df -h /media/marcelo/backup_ext4
 ```
 
 #### Soluções
@@ -181,7 +181,7 @@ curl -k https://localhost:6443/version
 #### Soluções
 ```bash
 # Recriar kubeconfig
-cp /media/marcelo/dados/k8s-config/kubeconfig.yaml ~/.kube/config
+cp /media/marcelo/backup_ext4/k8s-config/kubeconfig.yaml ~/.kube/config
 chmod 600 ~/.kube/config
 
 # Ajustar servidor
@@ -287,7 +287,7 @@ kubectl top nodes
 ### Q: Como adicionar mais workers?
 **R**: Edite o `docker-compose.yml` adicionando novos serviços worker seguindo o padrão dos existentes.
 
-### Q: Posso usar um storage diferente de `/media/marcelo/dados`?
+### Q: Posso usar um storage diferente de `/media/marcelo/backup_ext4`?
 **R**: Sim, edite a variável `DATA_DIR` no script `setup.sh` antes de executá-lo.
 
 ### Q: Como acessar o cluster de outras máquinas na rede?
@@ -360,7 +360,7 @@ curl -k -s -o /dev/null -w "K8s API: %{http_code}\n" https://localhost:6443/vers
 # Resources
 echo -e "\nResources:"
 free -h | head -2
-df -h /media/marcelo/dados | tail -1
+df -h /media/marcelo/backup_ext4 | tail -1
 
 echo "=== End Health Check ==="
 ```

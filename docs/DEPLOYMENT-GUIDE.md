@@ -27,7 +27,7 @@ Este guia fornece orientações completas para que equipes de DevOps e GitOps re
 - **Gerenciamento**: Rancher Server (UI web)
 - **Recursos**: 10GB RAM, 250GB storage distribuído
 - **Rede**: Cluster CIDR `10.42.0.0/16`, Service CIDR `10.43.0.0/16`
-- **Persistência**: Volumes externos em `/media/marcelo/dados`
+- **Persistência**: Volumes externos em `/media/marcelo/backup_ext4`
 
 ### Casos de Uso
 
@@ -1858,7 +1858,7 @@ make help
 ### Estrutura de Diretórios
 
 ```
-/media/marcelo/dados/
+/media/marcelo/backup_ext4/
 ├── rancher-data/      # Dados do Rancher
 ├── k8s-master/        # Dados do master
 ├── k8s-worker-[1-4]/  # Dados dos workers

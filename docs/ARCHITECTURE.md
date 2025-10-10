@@ -22,7 +22,7 @@ graph TB
         end
         
         subgraph "Persistent Storage"
-            V1["Storage Volumes<br/>/media/marcelo/dados/"]
+            V1["Storage Volumes<br/>/media/marcelo/backup_ext4/"]
         end
     end
     
@@ -46,7 +46,7 @@ graph TB
 - **Função**: Interface de gerenciamento web para Kubernetes
 - **Portas**: 80 (HTTP), 443 (HTTPS)
 - **Recursos**: Sem limite específico
-- **Volume**: `/media/marcelo/dados/rancher-data`
+- **Volume**: `/media/marcelo/backup_ext4/rancher-data`
 
 #### Características:
 - Interface web moderna para gerenciamento
@@ -60,7 +60,7 @@ graph TB
 - **Função**: Nó de controle do cluster Kubernetes
 - **Porta**: 6443 (Kubernetes API)
 - **Recursos**: 2GB RAM
-- **Volume**: `/media/marcelo/dados/k8s-master`
+- **Volume**: `/media/marcelo/backup_ext4/k8s-master`
 
 #### Componentes inclusos:
 - **API Server**: Interface REST do Kubernetes
@@ -75,7 +75,7 @@ graph TB
 - **Imagem**: `rancher/k3s:latest`
 - **Função**: Executar workloads (pods)
 - **Recursos**: 2GB RAM cada, 50GB storage
-- **Volumes**: `/media/marcelo/dados/k8s-worker-[1-4]`
+- **Volumes**: `/media/marcelo/backup_ext4/k8s-worker-[1-4]`
 
 #### Componentes inclusos:
 - **kubelet**: Agente local do Kubernetes
@@ -127,7 +127,7 @@ networks:
 
 ### Estrutura de Volumes
 ```
-/media/marcelo/dados/
+/media/marcelo/backup_ext4/
 ├── rancher-data/              # Dados do Rancher Server
 │   ├── management-state/      # Estado do cluster
 │   ├── cattle-global-data/    # Dados globais

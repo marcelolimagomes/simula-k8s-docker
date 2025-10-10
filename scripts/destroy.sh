@@ -36,7 +36,7 @@ if [ -f .env ]; then
     source .env
 else
     log_warn "Arquivo .env não encontrado! Usando configurações padrão..."
-    DATA_DIR="/media/marcelo/dados"
+    DATA_DIR="/media/marcelo/backup_ext4"
 fi
 
 echo ""

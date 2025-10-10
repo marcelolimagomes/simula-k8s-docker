@@ -91,8 +91,8 @@ chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 #### Preparação de Diretórios
 ```bash
 # Criar diretório de dados (ajuste o caminho se necessário)
-sudo mkdir -p /media/marcelo/dados
-sudo chown -R $USER:$USER /media/marcelo/dados
+sudo mkdir -p /media/marcelo/backup_ext4
+sudo chown -R $USER:$USER /media/marcelo/backup_ext4
 ```
 
 #### Limites do Sistema (automático no setup)
@@ -326,7 +326,7 @@ Para monitoramento mais detalhado, considere implementar:
 
 ### 📁 Organização de Dados
 ```
-/media/marcelo/dados/
+/media/marcelo/backup_ext4/
 ├── rancher/              # Dados persistentes do Rancher
 ├── k8s-master/          # Dados do nó master
 ├── k8s-worker-1/        # Dados do worker 1
@@ -411,7 +411,7 @@ kubectl config get-contexts
 docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
 
 # Espaço em disco
-df -h /media/marcelo/dados
+df -h /media/marcelo/backup_ext4
 
 # Memória disponível no host
 free -h
@@ -451,13 +451,13 @@ docker compose down && docker compose up -d
 # Reset apenas do Rancher
 docker compose stop rancher-server
 docker compose rm -f rancher-server
-sudo rm -rf /media/marcelo/dados/rancher/*
+sudo rm -rf /media/marcelo/backup_ext4/rancher/*
 docker compose up -d rancher-server
 
 # Reset de worker específico  
 docker compose stop k8s-worker-1
 docker compose rm -f k8s-worker-1
-sudo rm -rf /media/marcelo/dados/k8s-worker-1/*
+sudo rm -rf /media/marcelo/backup_ext4/k8s-worker-1/*
 docker compose up -d k8s-worker-1
 ## 📚 Documentação Adicional
 
@@ -531,7 +531,7 @@ make logs
 - **8080**: Traefik Dashboard (interno)
 
 #### Diretórios Importantes
-- `/media/marcelo/dados/`: Dados persistentes
+- `/media/marcelo/backup_ext4/`: Dados persistentes
 - `~/.kube/config`: Configuração kubectl
 - `./logs/`: Logs do sistema
 - `./scripts/`: Scripts de automação
@@ -569,7 +569,7 @@ Edite o `docker-compose.yml` para ajustar:
 ### Variáveis de Ambiente
 Arquivo `.env` gerado automaticamente:
 ```env
-DATA_DIR=/media/marcelo/dados
+DATA_DIR=/media/marcelo/backup_ext4
 PROJECT_DIR=/home/marcelo/des/simula-k8s-docker
 RANCHER_PASSWORD=admin123456
 K3S_TOKEN=k8s-cluster-secret
@@ -614,7 +614,7 @@ docker compose logs k8s-master | grep token
 #### 4. Kubectl não funciona
 ```bash
 # Reconfigurar kubeconfig
-cp /media/marcelo/dados/k8s-config/kubeconfig.yaml ~/.kube/config
+cp /media/marcelo/backup_ext4/k8s-config/kubeconfig.yaml ~/.kube/config
 chmod 600 ~/.kube/config
 ```
 
@@ -635,7 +635,7 @@ sleep 60 && kubectl get pods -A
 docker system prune -a -f
 
 # Remover dados (CUIDADO!)
-sudo rm -rf /media/marcelo/dados
+sudo rm -rf /media/marcelo/backup_ext4
 ```
 
 ## 📈 Recursos do Sistema

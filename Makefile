@@ -10,7 +10,7 @@ BLUE := \033[0;34m
 NC := \033[0m # No Color
 
 # Variáveis
-DATA_DIR := /media/marcelo/dados
+DATA_DIR := /media/marcelo/backup_ext4
 COMPOSE_FILE := docker-compose.yml
 
 help: ## Exibe esta ajuda

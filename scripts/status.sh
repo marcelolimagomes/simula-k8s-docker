@@ -102,8 +102,8 @@ free -h | awk 'NR==2{printf "%.1f/%.1fGB (%.2f%%)\n", $3/1024/1024/1024,$2/1024/
 
 echo ""
 echo "Disco ($DATA_DIR):"
-if [ -d "${DATA_DIR:-/media/marcelo/dados}" ]; then
-    df -h "${DATA_DIR:-/media/marcelo/dados}" | awk 'NR==2 {print $3"/"$2" ("$5" usado)"}'
+if [ -d "${DATA_DIR:-/media/marcelo/backup_ext4}" ]; then
+    df -h "${DATA_DIR:-/media/marcelo/backup_ext4}" | awk 'NR==2 {print $3"/"$2" ("$5" usado)"}'
 else
     log_warn "Diretório de dados não encontrado"
 fi

@@ -56,7 +56,7 @@ lscpu
 free -h
 
 # Verificar espaço em disco
-df -h /media/marcelo/dados
+df -h /media/marcelo/backup_ext4
 ```
 
 ### 2. Configuração do Sistema
@@ -90,12 +90,12 @@ sudo systemctl stop apache2 nginx # Se estiverem rodando
 ### 3. Preparação dos Diretórios
 ```bash
 # Criar estrutura base
-sudo mkdir -p /media/marcelo/dados
-sudo chown -R $USER:$USER /media/marcelo/dados
-chmod 755 /media/marcelo/dados
+sudo mkdir -p /media/marcelo/backup_ext4
+sudo chown -R $USER:$USER /media/marcelo/backup_ext4
+chmod 755 /media/marcelo/backup_ext4
 
 # Verificar permissões
-ls -la /media/marcelo/dados
+ls -la /media/marcelo/backup_ext4
 ```
 
 ## 🚀 Instalação

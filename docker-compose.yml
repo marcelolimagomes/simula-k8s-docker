@@ -9,8 +9,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /media/marcelo/dados/rancher-data:/var/lib/rancher
-      - /media/marcelo/dados/rancher-audit:/var/log/auditlog
+      - /media/marcelo/backup_ext4/rancher-data:/var/lib/rancher
+      - /media/marcelo/backup_ext4/rancher-audit:/var/log/auditlog
     environment:
       - CATTLE_BOOTSTRAP_PASSWORD=admin123456
     networks:
@@ -23,7 +23,7 @@ services:
     container_name: k8s-master
     hostname: k8s-master
     restart: unless-stopped
-    command: server
+    command: server --kubelet-arg="feature-gates=KubeletInUserNamespace=true"
     tmpfs:
       - /run
       - /var/run
@@ -41,8 +41,8 @@ services:
       - K3S_KUBECONFIG_MODE=666
       - K3S_NODE_NAME=k8s-master
     volumes:
-      - /media/marcelo/dados/k8s-master:/var/lib/rancher/k3s
-      - /media/marcelo/dados/k8s-config:/output
+      - /media/marcelo/backup_ext4/k8s-master:/var/lib/rancher/k3s:shared
+      - /media/marcelo/backup_ext4/k8s-config:/output
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
@@ -56,7 +56,7 @@ services:
     container_name: k8s-worker-1
     hostname: k8s-worker-1
     restart: unless-stopped
-    command: agent
+    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
     tmpfs:
       - /run
       - /var/run
@@ -71,7 +71,7 @@ services:
       - K3S_TOKEN=k8s-cluster-secret
       - K3S_NODE_NAME=k8s-worker-1
     volumes:
-      - /media/marcelo/dados/k8s-worker-1:/var/lib/rancher/k3s
+      - /media/marcelo/backup_ext4/k8s-worker-1:/var/lib/rancher/k3s:shared
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
@@ -86,7 +86,7 @@ services:
     container_name: k8s-worker-2
     hostname: k8s-worker-2
     restart: unless-stopped
-    command: agent
+    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
     tmpfs:
       - /run
       - /var/run
@@ -101,7 +101,7 @@ services:
       - K3S_TOKEN=k8s-cluster-secret
       - K3S_NODE_NAME=k8s-worker-2
     volumes:
-      - /media/marcelo/dados/k8s-worker-2:/var/lib/rancher/k3s
+      - /media/marcelo/backup_ext4/k8s-worker-2:/var/lib/rancher/k3s:shared
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
@@ -116,7 +116,7 @@ services:
     container_name: k8s-worker-3
     hostname: k8s-worker-3
     restart: unless-stopped
-    command: agent
+    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
     tmpfs:
       - /run
       - /var/run
@@ -131,7 +131,7 @@ services:
       - K3S_TOKEN=k8s-cluster-secret
       - K3S_NODE_NAME=k8s-worker-3
     volumes:
-      - /media/marcelo/dados/k8s-worker-3:/var/lib/rancher/k3s
+      - /media/marcelo/backup_ext4/k8s-worker-3:/var/lib/rancher/k3s:shared
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
@@ -146,7 +146,7 @@ services:
     container_name: k8s-worker-4
     hostname: k8s-worker-4
     restart: unless-stopped
-    command: agent
+    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
     tmpfs:
       - /run
       - /var/run
@@ -161,7 +161,7 @@ services:
       - K3S_TOKEN=k8s-cluster-secret
       - K3S_NODE_NAME=k8s-worker-4
     volumes:
-      - /media/marcelo/dados/k8s-worker-4:/var/lib/rancher/k3s
+      - /media/marcelo/backup_ext4/k8s-worker-4:/var/lib/rancher/k3s:shared
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
@@ -183,34 +183,34 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/rancher-data
+      device: /media/marcelo/backup_ext4/rancher-data
   k8s-master-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/k8s-master
+      device: /media/marcelo/backup_ext4/k8s-master
   k8s-worker-1-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/k8s-worker-1
+      device: /media/marcelo/backup_ext4/k8s-worker-1
   k8s-worker-2-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/k8s-worker-2
+      device: /media/marcelo/backup_ext4/k8s-worker-2
   k8s-worker-3-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/k8s-worker-3
+      device: /media/marcelo/backup_ext4/k8s-worker-3
   k8s-worker-4-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /media/marcelo/dados/k8s-worker-4
+      device: /media/marcelo/backup_ext4/k8s-worker-4

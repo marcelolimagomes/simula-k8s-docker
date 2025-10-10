@@ -17,7 +17,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configurações
-DATA_DIR="/media/marcelo/dados"
+DATA_DIR="/media/marcelo/backup_ext4"
 PROJECT_DIR="/home/marcelo/des/simula-k8s-docker"
 
 echo -e "${BLUE}==============================================================================${NC}"

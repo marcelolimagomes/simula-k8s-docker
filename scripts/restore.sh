@@ -19,7 +19,7 @@ NC='\033[0m'
 if [ -f .env ]; then
     source .env
 else
-    DATA_DIR="/media/marcelo/dados"
+    DATA_DIR="/media/marcelo/backup_ext4"
 fi
 
 log_info() {
