@@ -137,9 +137,9 @@ echo ""
 
 # Copiar kubeconfig
 log_info "Configurando acesso kubectl local..."
-if [ -f "$DATA_DIR/k8s-config/kubeconfig.yaml" ]; then
+if [ -f "$ROOT_DATA_DIR/k8s-config/kubeconfig.yaml" ]; then
     mkdir -p ~/.kube
-    cp "$DATA_DIR/k8s-config/kubeconfig.yaml" ~/.kube/config
+    cp "$ROOT_DATA_DIR/k8s-config/kubeconfig.yaml" ~/.kube/config
     chmod 600 ~/.kube/config
     
     # Ajustar servidor para localhost
@@ -174,7 +174,7 @@ echo ""
 echo -e "${YELLOW}Informações de Acesso:${NC}"
 echo -e "• Rancher UI: ${BLUE}https://localhost${NC}"
 echo -e "• Usuário: ${BLUE}admin${NC}"
-echo -e "• Senha: ${BLUE}$RANCHER_PASSWORD${NC}"
+echo -e "• Senha: ${BLUE}$CATTLE_BOOTSTRAP_PASSWORD${NC}"
 echo -e "• Kubernetes API: ${BLUE}https://localhost:6443${NC}"
 echo ""
 echo -e "${YELLOW}Comandos úteis:${NC}"

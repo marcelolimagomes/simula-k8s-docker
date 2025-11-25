@@ -19,7 +19,7 @@ NC='\033[0m'
 if [ -f .env ]; then
     source .env
 else
-    DATA_DIR="/media/marcelo/backup_ext4"
+    ROOT_DATA_DIR="./data/backup_ext4"
 fi
 
 log_info() {
@@ -43,8 +43,8 @@ if [ $# -eq 0 ]; then
     log_error "Uso: $0 <timestamp_do_backup>"
     echo ""
     echo "Backups disponíveis:"
-    if [ -d "$DATA_DIR/backups" ]; then
-        find "$DATA_DIR/backups" -name "k8s_rancher_backup_*" -type d | sort -r | head -10
+    if [ -d "$ROOT_DATA_DIR/backups" ]; then
+        find "$ROOT_DATA_DIR/backups" -name "k8s_rancher_backup_*" -type d | sort -r | head -10
     else
         echo "Nenhum backup encontrado"
     fi
@@ -52,7 +52,7 @@ if [ $# -eq 0 ]; then
 fi
 
 BACKUP_TIMESTAMP="$1"
-BACKUP_DIR="$DATA_DIR/backups/k8s_rancher_backup_$BACKUP_TIMESTAMP"
+BACKUP_DIR="$ROOT_DATA_DIR/backups/k8s_rancher_backup_$BACKUP_TIMESTAMP"
 
 echo -e "${BLUE}==============================================================================${NC}"
 echo -e "${BLUE}                  Restaurar Backup do Ambiente K8s + Rancher${NC}"
@@ -63,10 +63,10 @@ if [ ! -d "$BACKUP_DIR" ]; then
     log_error "Backup não encontrado: $BACKUP_DIR"
     
     # Verificar se existe arquivo comprimido
-    COMPRESSED_BACKUP="$DATA_DIR/backups/k8s_rancher_backup_$BACKUP_TIMESTAMP.tar.gz"
+    COMPRESSED_BACKUP="$ROOT_DATA_DIR/backups/k8s_rancher_backup_$BACKUP_TIMESTAMP.tar.gz"
     if [ -f "$COMPRESSED_BACKUP" ]; then
         log_info "Encontrado backup comprimido. Extraindo..."
-        cd "$DATA_DIR/backups"
+        cd "$ROOT_DATA_DIR/backups"
         tar -xzf "k8s_rancher_backup_$BACKUP_TIMESTAMP.tar.gz"
         
         if [ ! -d "$BACKUP_DIR" ]; then
@@ -100,12 +100,12 @@ docker compose down 2>/dev/null || true
 
 # Fazer backup dos dados atuais (por segurança)
 log_info "Fazendo backup dos dados atuais por segurança..."
-SAFETY_BACKUP_DIR="$DATA_DIR/backups/safety_backup_$(date +%Y%m%d_%H%M%S)"
+SAFETY_BACKUP_DIR="$ROOT_DATA_DIR/backups/safety_backup_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$SAFETY_BACKUP_DIR"
 
 for dir in rancher-data k8s-master k8s-worker-{1..4} k8s-config; do
-    if [ -d "$DATA_DIR/$dir" ]; then
-        mv "$DATA_DIR/$dir" "$SAFETY_BACKUP_DIR/"
+    if [ -d "$ROOT_DATA_DIR/$dir" ]; then
+        mv "$ROOT_DATA_DIR/$dir" "$SAFETY_BACKUP_DIR/"
         log_info "Movido $dir para backup de segurança"
     fi
 done
@@ -138,13 +138,13 @@ fi
 log_info "Restaurando dados Kubernetes..."
 
 if [ -f "$BACKUP_DIR/k8s-master-data.tar.gz" ]; then
-    tar -xzf "$BACKUP_DIR/k8s-master-data.tar.gz" -C "$DATA_DIR/"
+    tar -xzf "$BACKUP_DIR/k8s-master-data.tar.gz" -C "$ROOT_DATA_DIR/"
     log_info "Dados do master restaurados"
 fi
 
 for worker in {1..4}; do
     if [ -f "$BACKUP_DIR/k8s-worker-$worker-data.tar.gz" ]; then
-        tar -xzf "$BACKUP_DIR/k8s-worker-$worker-data.tar.gz" -C "$DATA_DIR/"
+        tar -xzf "$BACKUP_DIR/k8s-worker-$worker-data.tar.gz" -C "$ROOT_DATA_DIR/"
         log_info "Dados do worker-$worker restaurados"
     fi
 done
@@ -152,14 +152,14 @@ done
 # Restaurar dados Rancher
 if [ -f "$BACKUP_DIR/rancher-data.tar.gz" ]; then
     log_info "Restaurando dados Rancher..."
-    tar -xzf "$BACKUP_DIR/rancher-data.tar.gz" -C "$DATA_DIR/"
+    tar -xzf "$BACKUP_DIR/rancher-data.tar.gz" -C "$ROOT_DATA_DIR/"
     log_info "Dados do Rancher restaurados"
 fi
 
 # Configurar permissões
 log_info "Configurando permissões..."
-sudo chown -R $USER:$USER "$DATA_DIR"
-chmod -R 755 "$DATA_DIR"
+sudo chown -R $USER:$USER "$ROOT_DATA_DIR"
+chmod -R 755 "$ROOT_DATA_DIR"
 
 # Reiniciar ambiente
 log_info "Reiniciando ambiente..."

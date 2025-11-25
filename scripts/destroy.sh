@@ -36,7 +36,7 @@ if [ -f .env ]; then
     source .env
 else
     log_warn "Arquivo .env não encontrado! Usando configurações padrão..."
-    DATA_DIR="/media/marcelo/backup_ext4"
+    ROOT_DATA_DIR="./data/backup_ext4"
 fi
 
 echo ""
@@ -77,14 +77,14 @@ docker volume prune -f
 # Remover dados persistentes
 log_info "Removendo dados persistentes..."
 directories=(
-    "$DATA_DIR/rancher-data"
-    "$DATA_DIR/rancher-audit"
-    "$DATA_DIR/k8s-master"
-    "$DATA_DIR/k8s-worker-1"
-    "$DATA_DIR/k8s-worker-2"
-    "$DATA_DIR/k8s-worker-3"
-    "$DATA_DIR/k8s-worker-4"
-    "$DATA_DIR/k8s-config"
+    "$ROOT_DATA_DIR/rancher-data"
+    "$ROOT_DATA_DIR/rancher-audit"
+    "$ROOT_DATA_DIR/k8s-master"
+    "$ROOT_DATA_DIR/k8s-worker-1"
+    "$ROOT_DATA_DIR/k8s-worker-2"
+    "$ROOT_DATA_DIR/k8s-worker-3"
+    "$ROOT_DATA_DIR/k8s-worker-4"
+    "$ROOT_DATA_DIR/k8s-config"
 )
 
 for dir in "${directories[@]}"; do

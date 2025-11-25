@@ -5,6 +5,7 @@ Ambiente completo de desenvolvimento local para simular um cluster Kubernetes co
 ## 📋 Visão Geral
 
 Este projeto fornece um ambiente DevOps completo que simula:
+
 - **Cluster Kubernetes** com 1 master + 4 workers usando K3s
 - **Rancher Server** para gerenciamento visual do cluster
 - **Infrastructure as Code** com 7 scripts automatizados
@@ -14,6 +15,7 @@ Este projeto fornece um ambiente DevOps completo que simula:
 - **Documentação completa** com guias de arquitetura e troubleshooting
 
 ### ✨ Características Principais
+
 - 🐋 **Docker Compose v2** - Orquestração moderna de containers
 - ☸️ **K3s v1.30.14+k3s2** - Distribuição leve do Kubernetes
 - 🎯 **Rancher latest** - Interface web para gerenciamento
@@ -43,6 +45,7 @@ Este projeto fornece um ambiente DevOps completo que simula:
 ## 🛠️ Pré-requisitos e Instalação
 
 ### 📋 Requisitos do Sistema
+
 - **SO**: Linux (Ubuntu 20.04+, Debian 11+, CentOS 8+)
 - **CPU**: 4+ cores (recomendado)
 - **RAM**: 10GB+ disponível
@@ -52,6 +55,7 @@ Este projeto fornece um ambiente DevOps completo que simula:
 ### 🔧 Software Necessário
 
 #### 1. Docker Engine (v20.10+)
+
 ```bash
 # Ubuntu/Debian
 sudo apt update
@@ -70,6 +74,7 @@ newgrp docker
 ```
 
 #### 2. Docker Compose v2
+
 ```bash
 # Instalar como plugin do Docker
 sudo mkdir -p /usr/local/lib/docker/cli-plugins
@@ -81,6 +86,7 @@ docker compose version
 ```
 
 #### 3. kubectl (Opcional - será instalado automaticamente)
+
 ```bash
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -89,19 +95,23 @@ chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 ### ⚙️ Configuração do Sistema
 
 #### Preparação de Diretórios
+
 ```bash
 # Criar diretório de dados (ajuste o caminho se necessário)
-sudo mkdir -p /media/marcelo/backup_ext4
-sudo chown -R $USER:$USER /media/marcelo/backup_ext4
+sudo mkdir -p ./data/backup_ext4
+sudo chown -R $USER:$USER ./data/backup_ext4
 ```
 
 #### Limites do Sistema (automático no setup)
+
 O script `setup.sh` configura automaticamente:
+
 - Limites de arquivos abertos: 65536
 - Parâmetros do kernel para Kubernetes
 - Watchers inotify para containers
 
 ### 🧪 Verificação dos Pré-requisitos
+
 ```bash
 # Execute o script de verificação automática
 make check-requirements
@@ -116,12 +126,14 @@ df -h                        # Espaço em disco
 ### 🚀 Instalação e Primeira Configuração
 
 #### 1. Clone do Repositório
+
 ```bash
 git clone <seu-repositorio>
 cd simula-k8s-docker
 ```
 
 #### 2. Preparação do Ambiente
+
 ```bash
 # Tornar scripts executáveis
 chmod +x scripts/*.sh
@@ -134,6 +146,7 @@ make setup
 ```
 
 #### 3. Deploy da Stack Completa
+
 ```bash
 # Deploy completo (Rancher + Cluster K8s)
 make deploy
@@ -143,6 +156,7 @@ make status
 ```
 
 #### 4. Aguardar Inicialização (5-10 minutos)
+
 ```bash
 # Verificar status dos containers
 make status
@@ -154,11 +168,13 @@ make check-workers
 #### 5. Acessar Interfaces
 
 **Rancher UI**:
+
 - URL: https://localhost (ou https://seu-ip)
 - Setup inicial: seguir wizard de configuração
 - Importar cluster K3s local automaticamente
 
 **kubectl** (configurado automaticamente):
+
 ```bash
 # Verificar cluster
 kubectl get nodes -o wide
@@ -170,6 +186,7 @@ kubectl get pods -A
 ### 🔍 Verificação da Instalação
 
 #### Comandos de Diagnóstico
+
 ```bash
 # Status geral
 make status
@@ -185,6 +202,7 @@ make test-connectivity
 ```
 
 #### Indicadores de Sucesso
+
 - ✅ 5 containers rodando (1 Rancher + 1 Master + 4 Workers)
 - ✅ Todos os nós com status "Ready"
 - ✅ Rancher UI acessível via browser
@@ -195,21 +213,22 @@ make test-connectivity
 
 ### 🔧 Comandos Make Disponíveis
 
-| Comando | Descrição | Uso |
-|---------|-----------|-----|
-| `make setup` | Configuração inicial do sistema | Primeira execução |
-| `make deploy` | Deploy da stack completa | Deploy inicial/restart |
-| `make status` | Status de todos os containers | Monitoramento |
-| `make stop` | Para todos os containers | Manutenção |
-| `make destroy` | Remove stack completamente | Reset total |
-| `make logs` | Visualiza logs de todos containers | Debugging |
-| `make check-workers` | Verifica status dos workers K8s | Diagnóstico |
-| `make backup` | Backup dos dados persistentes | Proteção dados |
-| `make restore` | Restaura backup anterior | Recuperação |
+| Comando              | Descrição                          | Uso                    |
+| -------------------- | ---------------------------------- | ---------------------- |
+| `make setup`         | Configuração inicial do sistema    | Primeira execução      |
+| `make deploy`        | Deploy da stack completa           | Deploy inicial/restart |
+| `make status`        | Status de todos os containers      | Monitoramento          |
+| `make stop`          | Para todos os containers           | Manutenção             |
+| `make destroy`       | Remove stack completamente         | Reset total            |
+| `make logs`          | Visualiza logs de todos containers | Debugging              |
+| `make check-workers` | Verifica status dos workers K8s    | Diagnóstico            |
+| `make backup`        | Backup dos dados persistentes      | Proteção dados         |
+| `make restore`       | Restaura backup anterior           | Recuperação            |
 
 ### 🚨 Solução de Problemas Comuns
 
 #### Problemas de Porta
+
 ```bash
 # Verificar portas em uso
 sudo netstat -tulpn | grep -E ':(80|443|6443)'
@@ -219,6 +238,7 @@ sudo systemctl stop apache2 nginx
 ```
 
 #### Problemas de Recursos
+
 ```bash
 # Verificar uso de recursos
 docker stats
@@ -228,6 +248,7 @@ docker system prune -f
 ```
 
 #### Workers Não Ficam "Ready"
+
 ```bash
 # Verificar logs dos workers
 make logs | grep worker
@@ -237,6 +258,7 @@ docker compose restart k8s-worker-1
 ```
 
 #### Rancher Não Carrega
+
 ```bash
 # Verificar logs do Rancher
 docker compose logs rancher-server
@@ -248,6 +270,7 @@ make destroy && make deploy
 ### 📊 Monitoramento e Logs
 
 #### Acompanhar Deploy em Tempo Real
+
 ```bash
 # Terminal 1: Status dos containers
 watch -n 5 "make status"
@@ -260,6 +283,7 @@ watch -n 10 "kubectl get nodes -o wide"
 ```
 
 #### Métricas e Performance
+
 ```bash
 # Uso de recursos por container
 docker stats
@@ -274,6 +298,7 @@ kubectl get pods -A -o wide
 ### � Ciclo de Vida do Ambiente
 
 #### Deploy Completo (primeira vez)
+
 ```bash
 make setup    # ← Configuração do sistema
 make deploy   # ← Deploy da stack
@@ -281,12 +306,14 @@ make status   # ← Verificar status
 ```
 
 #### Restart da Stack
+
 ```bash
 make stop     # ← Parar containers
 make deploy   # ← Subir novamente
 ```
 
 #### Reset Completo
+
 ```bash
 make backup   # ← Backup dos dados (opcional)
 make destroy  # ← Remove tudo
@@ -297,6 +324,7 @@ make deploy   # ← Deploy limpo
 ### 🔐 Segurança e Backup
 
 #### Backup Regular
+
 ```bash
 # Backup automático (configurar crontab)
 0 2 * * * cd /caminho/simula-k8s-docker && make backup
@@ -306,6 +334,7 @@ make backup
 ```
 
 #### Restauração
+
 ```bash
 make destroy  # Remove ambiente atual
 make restore  # Restaura backup
@@ -315,6 +344,7 @@ make deploy   # Reconectar containers
 ### 📈 Monitoramento Avançado
 
 Para monitoramento mais detalhado, considere implementar:
+
 - **Prometheus + Grafana**: Métricas detalhadas
 - **ELK Stack**: Centralização de logs
 - **Jaeger**: Tracing distribuído
@@ -325,12 +355,13 @@ Para monitoramento mais detalhado, considere implementar:
 ## � Estrutura de Dados e Configuração
 
 ### 📁 Organização de Dados
+
 ```
-/media/marcelo/backup_ext4/
+./data/backup_ext4/
 ├── rancher/              # Dados persistentes do Rancher
 ├── k8s-master/          # Dados do nó master
 ├── k8s-worker-1/        # Dados do worker 1
-├── k8s-worker-2/        # Dados do worker 2  
+├── k8s-worker-2/        # Dados do worker 2
 ├── k8s-worker-3/        # Dados do worker 3
 ├── k8s-worker-4/        # Dados do worker 4
 ├── backups/             # Backups automáticos
@@ -340,17 +371,20 @@ Para monitoramento mais detalhado, considere implementar:
 ### ⚙️ Configurações Avançadas
 
 #### Personalizar Recursos dos Workers
+
 Edite `docker-compose.yml` para ajustar recursos:
+
 ```yaml
 k8s-worker-1:
   deploy:
     resources:
       limits:
-        memory: 4G      # Aumentar RAM
-        cpus: '2.0'     # Aumentar CPU
+        memory: 4G # Aumentar RAM
+        cpus: "2.0" # Aumentar CPU
 ```
 
 #### Configurar Rede Personalizada
+
 ```bash
 # Criar rede customizada
 docker network create --driver bridge \
@@ -360,6 +394,7 @@ docker network create --driver bridge \
 ```
 
 #### Adicionar Workers Adicionais
+
 ```bash
 # Copiar configuração de worker existente
 # Ajustar nome e IP no docker-compose.yml
@@ -368,21 +403,23 @@ docker network create --driver bridge \
 
 ### 🌐 URLs e Acessos
 
-| Serviço | URL | Credenciais |
-|---------|-----|-------------|
-| **Rancher UI** | https://localhost | Setup inicial |
-| **K8s API** | https://localhost:6443 | Via kubectl |
-| **Traefik Dashboard** | http://localhost:8080 | Automático |
+| Serviço               | URL                    | Credenciais   |
+| --------------------- | ---------------------- | ------------- |
+| **Rancher UI**        | https://localhost      | Setup inicial |
+| **K8s API**           | https://localhost:6443 | Via kubectl   |
+| **Traefik Dashboard** | http://localhost:8080  | Automático    |
 
 ### 🔑 Gerenciamento de Credenciais
 
 #### Rancher Setup Inicial
+
 1. Acesse https://localhost
 2. Defina senha do admin (primeira vez)
 3. Configure URL do servidor Rancher
 4. Importe cluster K3s local automaticamente
 
 #### kubectl Configuration
+
 ```bash
 # Kubeconfig configurado automaticamente em:
 export KUBECONFIG=~/.kube/config
@@ -398,20 +435,21 @@ kubectl config get-contexts
 
 #### Requisitos Mínimos vs Recomendados
 
-| Componente | Mínimo | Recomendado | Produção |
-|------------|--------|-------------|----------|
-| **RAM** | 8GB | 12GB | 16GB+ |
-| **CPU** | 4 cores | 6 cores | 8+ cores |
-| **Disco** | 100GB | 250GB | 500GB+ |
-| **Rede** | 100Mbps | 1Gbps | 10Gbps+ |
+| Componente | Mínimo  | Recomendado | Produção |
+| ---------- | ------- | ----------- | -------- |
+| **RAM**    | 8GB     | 12GB        | 16GB+    |
+| **CPU**    | 4 cores | 6 cores     | 8+ cores |
+| **Disco**  | 100GB   | 250GB       | 500GB+   |
+| **Rede**   | 100Mbps | 1Gbps       | 10Gbps+  |
 
 #### Monitoramento de Recursos
+
 ```bash
 # Uso atual de recursos
 docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
 
 # Espaço em disco
-df -h /media/marcelo/backup_ext4
+df -h ./data/backup_ext4
 
 # Memória disponível no host
 free -h
@@ -420,6 +458,7 @@ free -h
 ### 🔧 Troubleshooting Avançado
 
 #### Logs Centralizados
+
 ```bash
 # Todos os logs
 make logs
@@ -435,6 +474,7 @@ docker compose logs -f k8s-worker-1
 ```
 
 #### Problemas de Conectividade
+
 ```bash
 # Teste de conectividade interna
 docker exec k8s-master ping k8s-worker-1
@@ -447,17 +487,18 @@ docker compose down && docker compose up -d
 ```
 
 #### Reset de Componentes Específicos
-```bash
+
+````bash
 # Reset apenas do Rancher
 docker compose stop rancher-server
 docker compose rm -f rancher-server
-sudo rm -rf /media/marcelo/backup_ext4/rancher/*
+sudo rm -rf ./data/backup_ext4/rancher/*
 docker compose up -d rancher-server
 
-# Reset de worker específico  
+# Reset de worker específico
 docker compose stop k8s-worker-1
 docker compose rm -f k8s-worker-1
-sudo rm -rf /media/marcelo/backup_ext4/k8s-worker-1/*
+sudo rm -rf ./data/backup_ext4/k8s-worker-1/*
 docker compose up -d k8s-worker-1
 ## 📚 Documentação Adicional
 
@@ -522,16 +563,18 @@ make backup
 
 # Ver logs
 make logs
-```
+````
 
 #### Portas Utilizadas
+
 - **80**: HTTP Rancher (redirect para 443)
 - **443**: HTTPS Rancher UI
 - **6443**: Kubernetes API Server
 - **8080**: Traefik Dashboard (interno)
 
 #### Diretórios Importantes
-- `/media/marcelo/backup_ext4/`: Dados persistentes
+
+- `./data/backup_ext4/`: Dados persistentes
 - `~/.kube/config`: Configuração kubectl
 - `./logs/`: Logs do sistema
 - `./scripts/`: Scripts de automação
@@ -541,6 +584,7 @@ make logs
 ## 🎯 Começar Agora
 
 ### Para Iniciantes
+
 1. **Instale Docker e Docker Compose** (seção Pré-requisitos)
 2. **Clone este repositório**
 3. **Execute**: `make setup && make deploy`
@@ -548,6 +592,7 @@ make logs
 5. **Explore**: `kubectl get nodes`
 
 ### Para Usuários Avançados
+
 1. **Customize** `docker-compose.yml` conforme necessário
 2. **Ajuste** recursos e configurações avançadas
 3. **Integre** com ferramentas de monitoring existentes
@@ -561,15 +606,18 @@ make logs
 
 **🏷️ Versão**: 1.0.0 | **📅 Última Atualização**: $(date)
 Edite o `docker-compose.yml` para ajustar:
+
 - Memória RAM por worker (padrão: 2GB)
 - Limites de CPU
 - Configurações de rede
 - Volumes de dados
 
 ### Variáveis de Ambiente
+
 Arquivo `.env` gerado automaticamente:
+
 ```env
-DATA_DIR=/media/marcelo/backup_ext4
+DATA_DIR=./data/backup_ext4
 PROJECT_DIR=/home/marcelo/des/simula-k8s-docker
 RANCHER_PASSWORD=admin123456
 K3S_TOKEN=k8s-cluster-secret
@@ -582,11 +630,13 @@ SERVICE_CIDR=10.43.0.0/16
 ### Problemas Comuns
 
 #### 1. Containers não iniciam
+
 ```bash
 
 ```
 
 #### 2. Rancher não fica disponível
+
 ```bash
 # Aguardar mais tempo (pode levar até 5 minutos)
 curl -k https://localhost/ping
@@ -596,6 +646,7 @@ docker compose logs -f rancher-server
 ```
 
 #### 2.1. Erro "port is already allocated"
+
 ```bash
 # Parar todos os containers e reiniciar
 docker compose down
@@ -603,6 +654,7 @@ docker compose up -d
 ```
 
 #### 3. Workers não se conectam
+
 ```bash
 # Verificar conectividade
 docker exec k8s-worker-1 ping k8s-master
@@ -612,13 +664,15 @@ docker compose logs k8s-master | grep token
 ```
 
 #### 4. Kubectl não funciona
+
 ```bash
 # Reconfigurar kubeconfig
-cp /media/marcelo/backup_ext4/k8s-config/kubeconfig.yaml ~/.kube/config
+cp ./data/backup_ext4/k8s-config/kubeconfig.yaml ~/.kube/config
 chmod 600 ~/.kube/config
 ```
 
 #### 5. Pods Traefik em CrashLoopBackOff
+
 ```bash
 # Aguardar - geralmente se resolve automaticamente
 sleep 60 && kubectl get pods -A
@@ -627,6 +681,7 @@ sleep 60 && kubectl get pods -A
 **💡 Dica**: Para troubleshooting completo, consulte `docs/TROUBLESHOOTING.md`
 
 ### Limpeza Completa
+
 ```bash
 # Parar tudo
 ./scripts/destroy.sh
@@ -635,18 +690,20 @@ sleep 60 && kubectl get pods -A
 docker system prune -a -f
 
 # Remover dados (CUIDADO!)
-sudo rm -rf /media/marcelo/backup_ext4
+sudo rm -rf ./data/backup_ext4
 ```
 
 ## 📈 Recursos do Sistema
 
 ### Requisitos Mínimos
+
 - **CPU**: 4 cores
 - **RAM**: 10GB
 - **Disco**: 250GB
 - **Rede**: Porta 80, 443, 6443 disponíveis
 
 ### Uso Esperado
+
 - **RAM**: ~8GB em uso
 - **Disco**: ~200GB (com dados de teste)
 - **CPU**: 10-30% em idle
@@ -654,13 +711,16 @@ sudo rm -rf /media/marcelo/backup_ext4
 ## 🔐 Segurança
 
 ### Configurações de Segurança
+
 - Containers executam com usuário não-root quando possível
 - Volumes limitados ao necessário
 - Rede isolada entre containers
 - Logs de auditoria habilitados no Rancher
 
 ### Notas de Segurança
+
 ⚠️ **Este ambiente é para desenvolvimento local apenas!**
+
 - Senhas padrão são simples
 - Certificados são auto-assinados
 - Não usar em produção

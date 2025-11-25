@@ -27,7 +27,7 @@ Este guia fornece orientações completas para que equipes de DevOps e GitOps re
 - **Gerenciamento**: Rancher Server (UI web)
 - **Recursos**: 10GB RAM, 250GB storage distribuído
 - **Rede**: Cluster CIDR `10.42.0.0/16`, Service CIDR `10.43.0.0/16`
-- **Persistência**: Volumes externos em `/media/marcelo/backup_ext4`
+- **Persistência**: Volumes externos em `./data/backup_ext4`
 
 ### Casos de Uso
 
@@ -108,13 +108,13 @@ kubectl create namespace meu-app
 
 ### Visão Geral dos Métodos
 
-| Método | Complexidade | Controle | Recomendado Para |
-|--------|--------------|----------|------------------|
-| kubectl apply | Baixa | Alto | Deploys rápidos, testes |
-| Rancher UI | Baixa | Médio | Usuários iniciantes, visualização |
-| Helm Charts | Média | Alto | Aplicações complexas, reutilização |
-| GitOps (ArgoCD/Flux) | Alta | Muito Alto | Produção, automação completa |
-| CI/CD Pipeline | Alta | Muito Alto | Integração contínua |
+| Método               | Complexidade | Controle   | Recomendado Para                   |
+| -------------------- | ------------ | ---------- | ---------------------------------- |
+| kubectl apply        | Baixa        | Alto       | Deploys rápidos, testes            |
+| Rancher UI           | Baixa        | Médio      | Usuários iniciantes, visualização  |
+| Helm Charts          | Média        | Alto       | Aplicações complexas, reutilização |
+| GitOps (ArgoCD/Flux) | Alta         | Muito Alto | Produção, automação completa       |
+| CI/CD Pipeline       | Alta         | Muito Alto | Integração contínua                |
 
 ---
 
@@ -788,9 +788,9 @@ name: Build and Deploy to K8s
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   REGISTRY: ghcr.io
@@ -805,38 +805,38 @@ jobs:
       packages: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=semver,pattern={{version}}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build
@@ -844,40 +844,40 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
 
-    - name: Configure kubectl
-      run: |
-        mkdir -p ~/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-        chmod 600 ~/.kube/config
+      - name: Configure kubectl
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
 
-    - name: Update deployment image
-      run: |
-        kubectl set image deployment/minha-app \
-          app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          -n meu-app
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/minha-app \
+            app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -n meu-app
 
-    - name: Verify deployment
-      run: |
-        kubectl rollout status deployment/minha-app -n meu-app
-        kubectl get pods -n meu-app
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/minha-app -n meu-app
+          kubectl get pods -n meu-app
 
-    - name: Run smoke tests
-      run: |
-        # Aguardar serviço estar disponível
-        kubectl wait --for=condition=available --timeout=300s \
-          deployment/minha-app -n meu-app
-        
-        # Executar testes básicos
-        SERVICE_IP=$(kubectl get svc minha-app -n meu-app -o jsonpath='{.spec.clusterIP}')
-        curl -f http://$SERVICE_IP || exit 1
+      - name: Run smoke tests
+        run: |
+          # Aguardar serviço estar disponível
+          kubectl wait --for=condition=available --timeout=300s \
+            deployment/minha-app -n meu-app
+
+          # Executar testes básicos
+          SERVICE_IP=$(kubectl get svc minha-app -n meu-app -o jsonpath='{.spec.clusterIP}')
+          curl -f http://$SERVICE_IP || exit 1
 ```
 
 ### 2. GitLab CI/CD
@@ -941,20 +941,20 @@ deploy:
 // Jenkinsfile
 pipeline {
     agent any
-    
+
     environment {
         DOCKER_REGISTRY = 'docker.io'
         IMAGE_NAME = 'meu-usuario/minha-app'
         KUBE_NAMESPACE = 'meu-app'
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Build') {
             steps {
                 script {
@@ -962,13 +962,13 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Test') {
             steps {
                 sh 'npm test || true'
             }
         }
-        
+
         stage('Push') {
             steps {
                 script {
@@ -979,7 +979,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 withKubeConfig([credentialsId: 'kube-config']) {
@@ -987,7 +987,7 @@ pipeline {
                         kubectl set image deployment/minha-app \
                             app=${IMAGE_NAME}:${BUILD_NUMBER} \
                             -n ${KUBE_NAMESPACE}
-                        
+
                         kubectl rollout status deployment/minha-app \
                             -n ${KUBE_NAMESPACE}
                     """
@@ -995,7 +995,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         success {
             echo 'Deploy realizado com sucesso!'
@@ -1080,8 +1080,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1        # Permite 1 pod extra durante update
-      maxUnavailable: 1  # Permite 1 pod indisponível durante update
+      maxSurge: 1 # Permite 1 pod extra durante update
+      maxUnavailable: 1 # Permite 1 pod indisponível durante update
   selector:
     matchLabels:
       app: rolling-app
@@ -1091,14 +1091,14 @@ spec:
         app: rolling-app
     spec:
       containers:
-      - name: app
-        image: nginx:1.25-alpine
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: app
+          image: nginx:1.25-alpine
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ```bash
@@ -1421,40 +1421,40 @@ spec:
         app: myapp
     spec:
       containers:
-      - name: app
-        image: nginx:alpine
-        ports:
-        - containerPort: 80
-        
-        # Liveness Probe - reinicia container se falhar
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        
-        # Readiness Probe - remove de service se falhar
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-        
-        # Startup Probe - para apps com inicialização lenta
-        startupProbe:
-          httpGet:
-            path: /startup
-            port: 80
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 30  # 30 * 10s = 5 minutos max
+        - name: app
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+
+          # Liveness Probe - reinicia container se falhar
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # Readiness Probe - remove de service se falhar
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Startup Probe - para apps com inicialização lenta
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: 80
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 30 # 30 * 10s = 5 minutos max
 ```
 
 ### 5. Instalar Stack de Monitoramento (Prometheus + Grafana)
@@ -1682,10 +1682,10 @@ metadata:
 # Sempre definir requests e limits
 resources:
   requests:
-    cpu: 100m      # Mínimo necessário
+    cpu: 100m # Mínimo necessário
     memory: 128Mi
   limits:
-    cpu: 500m      # Máximo permitido
+    cpu: 500m # Máximo permitido
     memory: 512Mi
 ```
 
@@ -1700,18 +1700,18 @@ securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
-    - ALL
+      - ALL
 
 # Não usar :latest
-image: nginx:1.25.3-alpine  # Versão específica
+image: nginx:1.25.3-alpine # Versão específica
 
 # Usar Secrets para dados sensíveis
 env:
-- name: DB_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: db-secrets
-      key: password
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: db-secrets
+        key: password
 ```
 
 ### 5. Health Checks
@@ -1794,8 +1794,8 @@ strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 1
-    maxUnavailable: 0  # Zero downtime
-minReadySeconds: 10    # Aguardar estabilização
+    maxUnavailable: 0 # Zero downtime
+minReadySeconds: 10 # Aguardar estabilização
 ```
 
 ### 10. Namespaces e RBAC
@@ -1858,7 +1858,7 @@ make help
 ### Estrutura de Diretórios
 
 ```
-/media/marcelo/backup_ext4/
+./data/backup_ext4/
 ├── rancher-data/      # Dados do Rancher
 ├── k8s-master/        # Dados do master
 ├── k8s-worker-[1-4]/  # Dados dos workers

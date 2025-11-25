@@ -19,7 +19,7 @@ NC='\033[0m'
 if [ -f .env ]; then
     source .env
 else
-    DATA_DIR="/media/marcelo/backup_ext4"
+    ROOT_DATA_DIR="./data/backup_ext4"
 fi
 
 log_info() {
@@ -31,7 +31,7 @@ log_warn() {
 }
 
 # Configurações de backup
-BACKUP_BASE_DIR="$DATA_DIR/backups"
+BACKUP_BASE_DIR="$ROOT_DATA_DIR/backups"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_DIR="$BACKUP_BASE_DIR/k8s_rancher_backup_$TIMESTAMP"
 
@@ -57,20 +57,20 @@ fi
 
 # Backup dos dados Kubernetes
 log_info "Fazendo backup dos dados Kubernetes..."
-if [ -d "$DATA_DIR/k8s-master" ]; then
-    tar -czf "$BACKUP_DIR/k8s-master-data.tar.gz" -C "$DATA_DIR" k8s-master/
+if [ -d "$ROOT_DATA_DIR/k8s-master" ]; then
+    tar -czf "$BACKUP_DIR/k8s-master-data.tar.gz" -C "$ROOT_DATA_DIR" k8s-master/
 fi
 
 for worker in {1..4}; do
-    if [ -d "$DATA_DIR/k8s-worker-$worker" ]; then
-        tar -czf "$BACKUP_DIR/k8s-worker-$worker-data.tar.gz" -C "$DATA_DIR" "k8s-worker-$worker/"
+    if [ -d "$ROOT_DATA_DIR/k8s-worker-$worker" ]; then
+        tar -czf "$BACKUP_DIR/k8s-worker-$worker-data.tar.gz" -C "$ROOT_DATA_DIR" "k8s-worker-$worker/"
     fi
 done
 
 # Backup dos dados Rancher
 log_info "Fazendo backup dos dados Rancher..."
-if [ -d "$DATA_DIR/rancher-data" ]; then
-    tar -czf "$BACKUP_DIR/rancher-data.tar.gz" -C "$DATA_DIR" rancher-data/
+if [ -d "$ROOT_DATA_DIR/rancher-data" ]; then
+    tar -czf "$BACKUP_DIR/rancher-data.tar.gz" -C "$ROOT_DATA_DIR" rancher-data/
 fi
 
 # Backup dos recursos Kubernetes (se o cluster estiver rodando)
@@ -104,7 +104,7 @@ Versão do Docker Compose: $(docker compose version)
 Versão do kubectl: $(kubectl version --client --short 2>/dev/null || echo "kubectl não disponível")
 Sistema operacional: $(uname -a)
 Usuário: $(whoami)
-Diretório de dados: $DATA_DIR
+Diretório de dados: $ROOT_DATA_DIR
 
 # Conteúdo do backup:
 $(find "$BACKUP_DIR" -type f | sort)

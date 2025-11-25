@@ -27,6 +27,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Carregar configurações
+if [ -f .env ]; then
+    source .env
+else
+    ROOT_DATA_DIR="./data/backup_ext4"
+fi
+
 echo -e "${BLUE}==============================================================================${NC}"
 echo -e "${BLUE}                      Status do Ambiente K8s + Rancher${NC}"
 echo -e "${BLUE}==============================================================================${NC}"
@@ -101,9 +108,9 @@ echo "Memória:"
 free -h | awk 'NR==2{printf "%.1f/%.1fGB (%.2f%%)\n", $3/1024/1024/1024,$2/1024/1024/1024,$3*100/$2 }'
 
 echo ""
-echo "Disco ($DATA_DIR):"
-if [ -d "${DATA_DIR:-/media/marcelo/backup_ext4}" ]; then
-    df -h "${DATA_DIR:-/media/marcelo/backup_ext4}" | awk 'NR==2 {print $3"/"$2" ("$5" usado)"}'
+echo "Disco ($ROOT_DATA_DIR):"
+if [ -d "${ROOT_DATA_DIR}" ]; then
+    df -h "${ROOT_DATA_DIR}" | awk 'NR==2 {print $3"/"$2" ("$5" usado)"}'
 else
     log_warn "Diretório de dados não encontrado"
 fi

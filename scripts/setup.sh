@@ -16,8 +16,13 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configurações
-DATA_DIR="/media/marcelo/backup_ext4"
+# Carregar configurações
+if [ -f .env ]; then
+    source .env
+else
+    ROOT_DATA_DIR="./data/backup_ext4"
+fi
+
 PROJECT_DIR="/home/marcelo/des/simula-k8s-docker"
 
 echo -e "${BLUE}==============================================================================${NC}"
@@ -74,14 +79,14 @@ log_info "Todas as dependências estão instaladas!"
 log_info "Criando estrutura de diretórios de dados..."
 
 directories=(
-    "$DATA_DIR/rancher-data"
-    "$DATA_DIR/rancher-audit"
-    "$DATA_DIR/k8s-master"
-    "$DATA_DIR/k8s-worker-1"
-    "$DATA_DIR/k8s-worker-2"
-    "$DATA_DIR/k8s-worker-3"
-    "$DATA_DIR/k8s-worker-4"
-    "$DATA_DIR/k8s-config"
+    "$ROOT_DATA_DIR/rancher-data"
+    "$ROOT_DATA_DIR/rancher-audit"
+    "$ROOT_DATA_DIR/k8s-master"
+    "$ROOT_DATA_DIR/k8s-worker-1"
+    "$ROOT_DATA_DIR/k8s-worker-2"
+    "$ROOT_DATA_DIR/k8s-worker-3"
+    "$ROOT_DATA_DIR/k8s-worker-4"
+    "$ROOT_DATA_DIR/k8s-config"
 )
 
 for dir in "${directories[@]}"; do
@@ -95,12 +100,12 @@ done
 
 # Definir permissões
 log_info "Configurando permissões dos diretórios..."
-sudo chown -R $USER:$USER $DATA_DIR
-chmod -R 755 $DATA_DIR
+sudo chown -R $USER:$USER $ROOT_DATA_DIR
+chmod -R 755 $ROOT_DATA_DIR
 
 # Verificar espaço em disco
 log_info "Verificando espaço disponível em disco..."
-available_space=$(df -BG "$DATA_DIR" | awk 'NR==2 {print $4}' | sed 's/G//')
+available_space=$(df -BG "$ROOT_DATA_DIR" | awk 'NR==2 {print $4}' | sed 's/G//')
 required_space=250 # 250GB requeridos (50GB x 4 workers + overhead)
 
 if [ "$available_space" -lt "$required_space" ]; then
@@ -152,9 +157,9 @@ docker pull rancher/k3s:latest
 log_info "Criando arquivo de configuração de ambiente..."
 cat > "$PROJECT_DIR/.env" << EOF
 # Configurações do ambiente Kubernetes + Rancher
-DATA_DIR=$DATA_DIR
+ROOT_DATA_DIR=$ROOT_DATA_DIR
 PROJECT_DIR=$PROJECT_DIR
-RANCHER_PASSWORD=admin123456
+CATTLE_BOOTSTRAP_PASSWORD=admin123456
 K3S_TOKEN=k8s-cluster-secret
 
 # Configurações de rede

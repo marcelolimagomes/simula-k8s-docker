@@ -10,7 +10,7 @@ BLUE := \033[0;34m
 NC := \033[0m # No Color
 
 # Variáveis
-DATA_DIR := /media/marcelo/backup_ext4
+DATA_DIR := ./data/backup_ext4
 COMPOSE_FILE := docker-compose.yml
 
 help: ## Exibe esta ajuda
@@ -146,7 +146,9 @@ urls: ## Mostrar URLs de acesso
 	@echo -e "${BLUE}[URLs]${NC} URLs de acesso:"
 	@echo -e "${YELLOW}Rancher UI:${NC}     https://localhost"
 	@echo -e "${YELLOW}Kubernetes API:${NC} https://localhost:6443"
-	@echo -e "${YELLOW}Credenciais:${NC}    admin / admin123456"
+	@echo -e "${YELLOW}Bastion SSH:${NC}    ssh bastion@localhost -p 2222"
+	@echo -e "${YELLOW}Credenciais:${NC}    admin / admin123456 (Rancher)"
+	@echo -e "${YELLOW}Bastion:${NC}        bastion / P@ssw0rd123!"
 
 update: ## Atualizar imagens Docker
 	@echo -e "${BLUE}[UPDATE]${NC} Atualizando imagens..."
@@ -165,6 +167,31 @@ version: ## Mostrar versões dos componentes
 	@docker inspect rancher-server --format='  {{.Config.Image}}' 2>/dev/null || echo -e "  ${RED}não disponível${NC}"
 	@echo -e "${YELLOW}Kubernetes:${NC}"
 	@kubectl version --short 2>/dev/null | head -1 | sed 's/^/  /' || echo -e "  ${RED}não disponível${NC}"
+
+# Comandos do Bastion
+shell-bastion: ## Acessar shell do bastion
+	@echo -e "${BLUE}[BASTION]${NC} Conectando ao bastion..."
+	@ssh -o StrictHostKeyChecking=no -p 2222 bastion@localhost
+
+setup-bastion: ## Configurar bastion host
+	@echo -e "${BLUE}[BASTION]${NC} Configurando bastion..."
+	@./scripts/setup-bastion.sh
+
+start-bastion: ## Iniciar apenas o bastion
+	@echo -e "${BLUE}[BASTION]${NC} Iniciando bastion..."
+	@docker compose up -d bastion
+
+stop-bastion: ## Parar apenas o bastion
+	@echo -e "${BLUE}[BASTION]${NC} Parando bastion..."
+	@docker compose stop bastion
+
+restart-bastion: ## Reiniciar bastion
+	@echo -e "${BLUE}[BASTION]${NC} Reiniciando bastion..."
+	@docker compose restart bastion
+
+logs-bastion: ## Logs do bastion
+	@echo -e "${BLUE}[BASTION]${NC} Logs do bastion:"
+	@docker compose logs -f bastion
 
 # Comandos de conveniência
 up: deploy  ## Alias para deploy

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubectl-access-pod
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubectl-access
+  template:
+    metadata:
+      labels:
+        app: kubectl-access
+    spec:
+      containers:
+      - name: kubectl-access
+        image: ubuntu:22.04
+        command: ["/bin/bash", "-c"]
+        args:
+          - apt-get update && apt-get install -y openssh-server kubectl &&
+            mkdir -p /var/run/sshd &&
+            echo 'root:password123' | chpasswd &&
+            sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+            /usr/sbin/sshd -D
+        ports:
+        - containerPort: 22
+          name: ssh
+        env:
+        - name: KUBECONFIG
+          value: /root/.kube/config
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /root/.kube
+          readOnly: true
+      volumes:
+      - name: kubeconfig
+        configMap:
+          name: kubeconfig-cm  # Criar ConfigMap com o kubeconfig
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubectl-access-service
+  namespace: default
+spec:
+  type: NodePort  # Ou LoadBalancer se suportado
+  ports:
+  - port: 22
+    targetPort: 22
+    nodePort: 30222  # Porta no host
+  selector:
+    app: kubectl-access
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeconfig-cm
+  namespace: default
+data:
+  config: |
+    # Colar o conteúdo do kubeconfig aqui
