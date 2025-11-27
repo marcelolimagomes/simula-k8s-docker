@@ -140,7 +140,35 @@ services:
     depends_on:
       - k8s-master
 
-  # Bastion Host (Acesso Seguro ao Cluster)
+  # Worker Node 4
+  k8s-worker-4:
+    image: rancher/k3s:latest
+    container_name: k8s-worker-4
+    hostname: k8s-worker-4
+    restart: unless-stopped
+    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
+    tmpfs:
+      - /run
+      - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    environment:
+      - K3S_URL=https://k8s-master:6443
+      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_NODE_NAME=k8s-worker-4
+    volumes:
+      - ${ROOT_DATA_DIR}/k8s-worker-4:/var/lib/rancher/k3s:shared
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - k8s-network
+    mem_limit: 2g
+    shm_size: 50g
+    depends_on:
+      - k8s-master
   bastion:
     image: ubuntu:22.04
     container_name: bastion
