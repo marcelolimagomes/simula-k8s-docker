@@ -506,11 +506,12 @@ docker compose up -d k8s-worker-1
 
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
+| [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) | **Guia do Usuário** - Credenciais, APIs e exemplos | Usar o cluster no dia a dia |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitetura técnica detalhada | Entender design e componentes |
+| [`docs/DEPLOYMENT-GUIDE.md`](docs/DEPLOYMENT-GUIDE.md) | Guia de implantação de aplicações | Deploy de workloads |
+| [`docs/BASTION.md`](docs/BASTION.md) | Acesso SSH via Bastion Host | Acesso remoto seguro |
 | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Guia completo de problemas | Resolver erros e falhas |
 | [`docs/INSTALLATION.md`](docs/INSTALLATION.md) | Instalação passo a passo | Setup em novos ambientes |
-| [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) | Opções de configuração | Personalizar ambiente |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Guia para desenvolvedores | Contribuir com o projeto |
 
 ### 🔗 Links Úteis
 

@@ -1,5 +1,10 @@
 services:
-  # Rancher Server
+  # =============================================================================
+  # Rancher Server com K3s integrado
+  # =============================================================================
+  # O Rancher Server já possui um cluster K3s interno (cluster "local")
+  # Os workers se conectarão diretamente a este cluster
+  # =============================================================================
   rancher-server:
     image: rancher/rancher:latest
     container_name: rancher-server
@@ -8,47 +13,30 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "6443:6443" # Expor API do K3s interno do Rancher
     volumes:
       - ${ROOT_DATA_DIR}/rancher-data:/var/lib/rancher
       - ${ROOT_DATA_DIR}/rancher-audit:/var/log/auditlog
+      - ${ROOT_DATA_DIR}/k8s-config:/k8s-config
     environment:
       - CATTLE_BOOTSTRAP_PASSWORD=${CATTLE_BOOTSTRAP_PASSWORD}
     networks:
-      - k8s-network
+      k8s-network:
+        ipv4_address: 172.20.0.10
     privileged: true
+    # Healthcheck para garantir que o Rancher está pronto
+    healthcheck:
+      test: ["CMD", "curl", "-k", "-f", "https://localhost/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
-  # K8s Control Plane (Master Node)
-  k8s-master:
-    image: rancher/k3s:latest
-    container_name: k8s-master
-    hostname: k8s-master
-    restart: unless-stopped
-    command: server --kubelet-arg="feature-gates=KubeletInUserNamespace=true"
-    tmpfs:
-      - /run
-      - /var/run
-    ulimits:
-      nproc: 65535
-      nofile:
-        soft: 65535
-        hard: 65535
-    privileged: true
-    ports:
-      - "6443:6443"
-    environment:
-      - K3S_TOKEN=k8s-cluster-secret
-      - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
-      - K3S_KUBECONFIG_MODE=666
-      - K3S_NODE_NAME=k8s-master
-    volumes:
-      - ${ROOT_DATA_DIR}/k8s-master:/var/lib/rancher/k3s:shared
-      - ${ROOT_DATA_DIR}/k8s-config:/output
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - k8s-network
-    mem_limit: 2g
-    depends_on:
-      - rancher-server
+  # =============================================================================
+  # Workers K3s - Conectam ao cluster interno do Rancher
+  # =============================================================================
+  # Os workers aguardam o Rancher estar pronto e obtêm o token dinamicamente
+  # =============================================================================
 
   # Worker Node 1
   k8s-worker-1:
@@ -56,7 +44,14 @@ services:
     container_name: k8s-worker-1
     hostname: k8s-worker-1
     restart: unless-stopped
-    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
+    command: >
+      agent
+      --server=https://rancher-server:6443
+      --token-file=/run/secrets/node-token
+      --with-node-id
+      --kubelet-arg=feature-gates=KubeletInUserNamespace=true
+      --node-label=node.kubernetes.io/role=worker
+      --node-label=worker-id=1
     tmpfs:
       - /run
       - /var/run
@@ -67,18 +62,19 @@ services:
         hard: 65535
     privileged: true
     environment:
-      - K3S_URL=https://k8s-master:6443
-      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_URL=https://rancher-server:6443
       - K3S_NODE_NAME=k8s-worker-1
     volumes:
       - ${ROOT_DATA_DIR}/k8s-worker-1:/var/lib/rancher/k3s:shared
+      - ${ROOT_DATA_DIR}/k8s-token:/run/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
     mem_limit: 2g
     shm_size: 50g
     depends_on:
-      - k8s-master
+      rancher-server:
+        condition: service_healthy
 
   # Worker Node 2
   k8s-worker-2:
@@ -86,7 +82,14 @@ services:
     container_name: k8s-worker-2
     hostname: k8s-worker-2
     restart: unless-stopped
-    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
+    command: >
+      agent
+      --server=https://rancher-server:6443
+      --token-file=/run/secrets/node-token
+      --with-node-id
+      --kubelet-arg=feature-gates=KubeletInUserNamespace=true
+      --node-label=node.kubernetes.io/role=worker
+      --node-label=worker-id=2
     tmpfs:
       - /run
       - /var/run
@@ -97,18 +100,19 @@ services:
         hard: 65535
     privileged: true
     environment:
-      - K3S_URL=https://k8s-master:6443
-      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_URL=https://rancher-server:6443
       - K3S_NODE_NAME=k8s-worker-2
     volumes:
       - ${ROOT_DATA_DIR}/k8s-worker-2:/var/lib/rancher/k3s:shared
+      - ${ROOT_DATA_DIR}/k8s-token:/run/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
     mem_limit: 2g
     shm_size: 50g
     depends_on:
-      - k8s-master
+      rancher-server:
+        condition: service_healthy
 
   # Worker Node 3
   k8s-worker-3:
@@ -116,7 +120,14 @@ services:
     container_name: k8s-worker-3
     hostname: k8s-worker-3
     restart: unless-stopped
-    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
+    command: >
+      agent
+      --server=https://rancher-server:6443
+      --token-file=/run/secrets/node-token
+      --with-node-id
+      --kubelet-arg=feature-gates=KubeletInUserNamespace=true
+      --node-label=node.kubernetes.io/role=worker
+      --node-label=worker-id=3
     tmpfs:
       - /run
       - /var/run
@@ -127,18 +138,19 @@ services:
         hard: 65535
     privileged: true
     environment:
-      - K3S_URL=https://k8s-master:6443
-      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_URL=https://rancher-server:6443
       - K3S_NODE_NAME=k8s-worker-3
     volumes:
       - ${ROOT_DATA_DIR}/k8s-worker-3:/var/lib/rancher/k3s:shared
+      - ${ROOT_DATA_DIR}/k8s-token:/run/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
     mem_limit: 2g
     shm_size: 50g
     depends_on:
-      - k8s-master
+      rancher-server:
+        condition: service_healthy
 
   # Worker Node 4
   k8s-worker-4:
@@ -146,7 +158,14 @@ services:
     container_name: k8s-worker-4
     hostname: k8s-worker-4
     restart: unless-stopped
-    command: agent --kubelet-arg="feature-gates=KubeletInUserNamespace=true" --with-node-id
+    command: >
+      agent
+      --server=https://rancher-server:6443
+      --token-file=/run/secrets/node-token
+      --with-node-id
+      --kubelet-arg=feature-gates=KubeletInUserNamespace=true
+      --node-label=node.kubernetes.io/role=worker
+      --node-label=worker-id=4
     tmpfs:
       - /run
       - /var/run
@@ -157,42 +176,49 @@ services:
         hard: 65535
     privileged: true
     environment:
-      - K3S_URL=https://k8s-master:6443
-      - K3S_TOKEN=k8s-cluster-secret
+      - K3S_URL=https://rancher-server:6443
       - K3S_NODE_NAME=k8s-worker-4
     volumes:
       - ${ROOT_DATA_DIR}/k8s-worker-4:/var/lib/rancher/k3s:shared
+      - ${ROOT_DATA_DIR}/k8s-token:/run/secrets:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - k8s-network
     mem_limit: 2g
     shm_size: 50g
     depends_on:
-      - k8s-master
+      rancher-server:
+        condition: service_healthy
+
+  # =============================================================================
+  # Bastion Host - Acesso seguro ao cluster
+  # =============================================================================
   bastion:
     image: ubuntu:22.04
     container_name: bastion
     hostname: bastion
     restart: unless-stopped
     ports:
-      - "2222:22" # SSH bastion na porta 2222
+      - "2222:22"
     volumes:
       - ${ROOT_DATA_DIR}/k8s-config:/root/.kube:ro
       - ${ROOT_DATA_DIR}/bastion-ssh:/root/.ssh
     environment:
-      - KUBECONFIG=/root/.kube/config
+      - KUBECONFIG=/root/.kube/kubeconfig.yaml
     networks:
       - k8s-network
     command: [
         "/bin/bash",
         "-c",
         '
-        apt-get update && apt-get install -y openssh-server kubectl curl wget vim nano htop git &&
+        apt-get update && apt-get install -y openssh-server curl wget vim nano htop git &&
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" &&
+        chmod +x kubectl && mv kubectl /usr/local/bin/ &&
         mkdir -p /var/run/sshd /root/.ssh &&
-        echo ''bastion:P@ssw0rd123!'' | chpasswd &&
+        echo ''root:P@ssw0rd123!'' | chpasswd &&
         sed -i ''s/#PermitRootLogin prohibit-password/PermitRootLogin yes/'' /etc/ssh/sshd_config &&
         sed -i ''s/#PasswordAuthentication yes/PasswordAuthentication yes/'' /etc/ssh/sshd_config &&
-        echo ''export KUBECONFIG=/root/.kube/config'' >> /root/.bashrc &&
+        echo ''export KUBECONFIG=/root/.kube/kubeconfig.yaml'' >> /root/.bashrc &&
         echo ''alias k=kubectl'' >> /root/.bashrc &&
         echo ''alias kg="kubectl get"'' >> /root/.bashrc &&
         echo ''alias kga="kubectl get all"'' >> /root/.bashrc &&
@@ -201,7 +227,8 @@ services:
         ',
       ]
     depends_on:
-      - k8s-master
+      rancher-server:
+        condition: service_healthy
     mem_limit: 512m
 
 networks:
@@ -214,37 +241,11 @@ networks:
 volumes:
   rancher-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/rancher-data
-  k8s-master-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/k8s-master
   k8s-worker-1-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/k8s-worker-1
   k8s-worker-2-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/k8s-worker-2
   k8s-worker-3-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/k8s-worker-3
   k8s-worker-4-data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${ROOT_DATA_DIR}/k8s-worker-4

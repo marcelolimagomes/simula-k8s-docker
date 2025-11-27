@@ -48,16 +48,16 @@ echo ""
 echo -e "${BLUE}------------------------------------------------------------------------------${NC}"
 
 # Status do cluster Kubernetes (se disponível)
-if docker compose ps | grep -q "k8s-master.*Up"; then
+if docker compose ps | grep -q "rancher-server.*Up"; then
     echo ""
     log_info "Status dos Nodes Kubernetes:"
     echo ""
-    kubectl get nodes -o wide 2>/dev/null || docker exec k8s-master kubectl get nodes -o wide 2>/dev/null || log_error "Cluster Kubernetes não está disponível"
+    kubectl get nodes -o wide 2>/dev/null || docker exec rancher-server kubectl get nodes -o wide 2>/dev/null || log_error "Cluster Kubernetes não está disponível"
 
     echo ""
     log_info "Pods do Sistema Kubernetes:"
     echo ""
-    kubectl get pods -A 2>/dev/null || docker exec k8s-master kubectl get pods -A 2>/dev/null || log_error "Não foi possível listar pods"
+    kubectl get pods -A 2>/dev/null || docker exec rancher-server kubectl get pods -A 2>/dev/null || log_error "Não foi possível listar pods"
 
     echo ""
     log_info "Recursos do Cluster:"
@@ -67,7 +67,7 @@ if docker compose ps | grep -q "k8s-master.*Up"; then
     echo ""
     log_info "Namespaces:"
     echo ""
-    kubectl get namespaces 2>/dev/null || docker exec k8s-master kubectl get namespaces 2>/dev/null || log_error "Não foi possível listar namespaces"
+    kubectl get namespaces 2>/dev/null || docker exec rancher-server kubectl get namespaces 2>/dev/null || log_error "Não foi possível listar namespaces"
 else
     echo ""
     log_warn "Cluster Kubernetes não está rodando"
